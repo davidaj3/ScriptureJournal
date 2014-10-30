@@ -9,12 +9,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -36,7 +32,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  * JournalService
@@ -113,29 +108,36 @@ public class JournalService {
         TOPIC_LIST = tpcMap;
     }
     
+    /**
+     * newJournal
+     *      Creates a new journal and stores it in the active Journal
+     */
     public void newJournal() {
         activeJournal = new Journal();
     }
     
+    /**
+     * addNewEntry
+     *  Adds an entry to the active journal with the given date and content
+     * @param date
+     * @param content 
+     */
     public void addNewEntry(Calendar date, String content) {
         ScriptureFinder sFinder = new ScriptureFinder();
         TopicFinder tFinder = new TopicFinder();
         activeJournal.addEntry(date, content, sFinder.parseContent(content), tFinder.parseContent(content));
     }
     
-    /*
+    /**
     * loadFile
     *    Loads a file from the XML document provided.
-    *  Input:
-    *    filename: the XML file to be loaded.
-    *  Output:
-    *    Parses the file and assigns the resulting Journal object to activeJournal
+    * 
+    * @param filename - the XML file to be loaded.
     */
-    public void loadFile(String filename) {
+    public void loadFile(String filename) throws Exception {
         activeJournal = new Journal();
         
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance(); 
-        try {
             DocumentBuilder builder = factory.newDocumentBuilder();
             
             Document dom = builder.parse(new File(filename));
@@ -200,12 +202,13 @@ public class JournalService {
                     activeJournal.addEntry(date, content, scriptures, topics);
                 }
             }
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }   
     }
     
+    /**
+     * saveFile
+     *  Saves the active Journal to an XML file
+     * @param filename 
+     */
     public void saveFile(String filename) {
         try {
             DocumentBuilder dBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
@@ -258,6 +261,19 @@ public class JournalService {
         
     }
     
+    /**
+     * importTextFile
+     *  Imports a plain text file and stores it in activeJournal.
+     *  Text file is in this format:
+     * 
+     *  ----- (signifies new entry)
+     *  Date (yyyy-mm-dd)
+     *  Content
+     * 
+     * @param filename
+     * @param updater - updates the method's progress to a GUI or a log
+     * @throws Exception 
+     */
     public void importTextFile(String filename, Updater updater) throws Exception {
         activeJournal = new Journal();
         BufferedReader buffy = new BufferedReader(new FileReader(filename));
@@ -305,7 +321,12 @@ public class JournalService {
             
     }
     
-    
+    /**
+     * exportTextFile
+     *  Exports the active Journal to a plain text document,
+     *  in the format specified in importTextFile.
+     * @param filename 
+     */
     public void exportTextFile(String filename) {
         BufferedWriter out = null;
         
@@ -327,9 +348,9 @@ public class JournalService {
         }
     }
     
-    /*
+    /**
     *  displayEntries
-    *     Displays all entries in the active journal, in order of appearance.
+    *     Displays all entries in the active journal, in order by date
     */
     public String displayEntriesByDate() {
         List<Entry> entryList = activeJournal.getEntries();
@@ -354,6 +375,10 @@ public class JournalService {
         return result;
     }
     
+    /**
+     * displayEntriesByScripture
+     * @return String containing entries in the journal, sorted by scripture
+     */
     public String displayEntriesByScripture() {
         String result = "";
         
@@ -373,15 +398,18 @@ public class JournalService {
             if (!entriesContainingScripture.isEmpty()) {
                 result = result + book + "\n\n";
                 for (Entry entry : entriesContainingScripture) {
-                    result += entry.toString();
+                    result += entry.toString() + "\n";
                 }
-                result += "\n";
             }
         }
         result = result + "\n";
         return result;
     }
     
+    /**
+     * 
+     * @return String containing entries, sorted by topic
+     */
     public String displayEntriesByTopic() {
         String result = "";
         for (String topic : JournalService.TOPIC_LIST.keySet()) {
@@ -407,6 +435,11 @@ public class JournalService {
         return result;
     }
     
+    /**
+     * Essentially a customized toString method for Calendar objects.
+     * @param date
+     * @return String containing a date
+     */
     public static String printDate(Calendar date) {
         String result = "";
         

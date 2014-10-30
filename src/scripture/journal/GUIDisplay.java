@@ -51,6 +51,11 @@ public class GUIDisplay extends Application {
     private DisplayType displayType = DisplayType.DATE;
     private JournalService js;
     
+    /**
+     * start
+     *      Displays the GUI
+     * @param primaryStage 
+     */
     @Override
     public void start(Stage primaryStage) {
         js = new JournalService();
@@ -77,9 +82,15 @@ public class GUIDisplay extends Application {
                 FileChooser chooser = new FileChooser();
                 File file = chooser.showOpenDialog(primaryStage);
                 if (file != null) {
-                    js.loadFile(file.getPath());
+                    try {
+                        js.loadFile(file.getPath());
+                        status.setText("Journal Loaded");
+                        display.setText(displayJournal());
+                    } catch (Exception ex) {
+                        status.setText("Error loading file: " + file.getPath());
+                    }
 
-                    display.setText(displayJournal());
+                    
                 }
             }
             
@@ -95,7 +106,7 @@ public class GUIDisplay extends Application {
                 
                 if (file != null) {
                     js.saveFile(file.getPath());
-                    display.setText("File saved!");
+                    status.setText("File saved!");
                 }
             }
             
@@ -119,7 +130,14 @@ public class GUIDisplay extends Application {
                             try {
                                 js.importTextFile(file.getPath(), updater);   
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                Platform.runLater(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        status.setText("Error reading file: " + file.getPath());
+                                    }
+                                    
+                                });
                             }
                             
                             Platform.runLater(new Runnable() {
@@ -150,7 +168,7 @@ public class GUIDisplay extends Application {
                     
                     js.exportTextFile(file.getPath());
                     
-                    display.setText("File successfully exported to text!");
+                    status.setText("File successfully exported to text!");
                 }
             }
         });
@@ -252,6 +270,13 @@ public class GUIDisplay extends Application {
     public void stop() {
         System.exit(0);
     }
+    
+    /**
+     * DisplayJournal
+     *      Returns a string with a display of the entries in the journal,
+     *      sorted according to the current displayType.
+     * @return 
+     */
     private String displayJournal() {
         switch (displayType) {
             case DATE:
