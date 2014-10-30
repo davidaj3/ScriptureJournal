@@ -29,6 +29,30 @@ public class ScriptureFinderTestDrive {
     // public void hello() {}
     
     @Test
+    public void parseSingleTest1() throws Exception {
+        ScriptureFinder finder = new ScriptureFinder();
+        
+        Scripture scr = finder.parseSingle("Blah blah D&C 4:2 blah blah");
+        Assert.assertEquals(scr.toString(), "D&C 4:2");
+    }
+    
+    @Test
+    public void parseSingleTest2() throws Exception {
+        ScriptureFinder finder = new ScriptureFinder();
+        
+        Scripture scr = finder.parseSingle("Blah blah Doctrine and Covenants 5:8 blah blah");
+        Assert.assertEquals(scr.toString(), "D&C 5:8");
+    }
+    
+    @Test
+    public void parseSingleTest3() throws Exception {
+        ScriptureFinder finder = new ScriptureFinder();
+        
+        Scripture scr = finder.parseSingle("Blah blah Schoenberg chapter 8 blah blah");
+        Assert.assertNull(scr);
+    }
+    
+    @Test
     public void parseLineTest1() throws Exception {
         ScriptureFinder finder = new ScriptureFinder();
         
